@@ -1,12 +1,12 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
-const { con } = require("../config/db");
+const con = require("../config/db");
 
 exports.createMainAgency = asyncHandler(async (req, res, next) => {
-  const { manager_id, name_en, name_ar } = req.body;
+  const { city_id, manager_id, name_en, name_ar } = req.body;
   const agency = await con.query(
-    `INSERT INTO agency(manager_id, name_en, name_ar, isHQ) VALUES('?', '?', '?', 'true')`,
-    [manager_id, name_en, name_ar],
+    `INSERT INTO agency(city_id, manager_id, name_en, name_ar, isHQ) VALUES(?, ?, ?, ?)`,
+    [city_id, manager_id, name_en, name_ar, true],
     (err, result) => {
       if (err) {
         return next(new ErrorResponse(`Error: ${err}`, 400));

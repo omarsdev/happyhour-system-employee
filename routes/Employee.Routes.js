@@ -1,6 +1,10 @@
 const express = require("express");
 
-const { Login, Logout, createEmployee } = require("../controllers/Employee.Controller");
+const {
+  Login,
+  Logout,
+  createEmployee,
+} = require("../controllers/Employee.Controller");
 
 const router = express.Router();
 
