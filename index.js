@@ -8,12 +8,12 @@ const xss = require("xss-clean");
 const path = require("path");
 
 dotenv.config({ path: "./config/config.env" });
-//kjguygoytfoytof
-//MWAWFAAAAAAAAAAAAAAAAK
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.json({ type: 'application/json' }));
+// app.use(express.urlencoded({ extended: true }));
 
 app.use(helmet());
 app.use(xss());
@@ -23,8 +23,8 @@ app.get("/", (req, res, next) => {
 });
 
 // app.use("/api/v1/employee", require("./routes/Employee.Routes"));
-// app.use("/api/v1/country", require("./routes/Country.Routes"));
-app.use("/api/v1/report", require("./routes/Report.Routes"));
+app.use("/api/v1/country", require("./routes/Country.Routes"));
+//app.use("/api/v1/report", require("./routes/Report.Routes"));
 //app.use("/api/v1/city", require("./routes/City.Routes"));
 //app.use("/api/v1/agency", require("./routes/Agency.Routes"));
 
