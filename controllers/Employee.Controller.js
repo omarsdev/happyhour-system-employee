@@ -1,7 +1,7 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const { jwtGenerator } = require("../utils/jwtGenerator");
-const { con } = require("../db");
+const { con } = require("../config/db");
 const bcrypt = require("bcrypt");
 
 exports.createEmployee = asyncHandler(async(req, res, next) => {

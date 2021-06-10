@@ -1,11 +1,11 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
-const { con } = require("../db");
+const { con } = require("../config/db");
 
 exports.createCountry = asyncHandler(async(req, res, next) => {
     const { name_en, name_ar, province_code } = req.body;
     console.log(req.body);
-
+    //TODO chenge date to be created in mysql
     const country = await con.query(`INSERT INTO country(name_en, name_ar, province_code, create_date) VALUES(${name_en}, ${name_ar}, ${province_code}, "2017-06-15 09:34:21")`, (err, rows) => {
         if (!err) {
             res.status(201).json({

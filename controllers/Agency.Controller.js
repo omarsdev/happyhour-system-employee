@@ -1,6 +1,6 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
-const { con } = require("../db");
+const { con } = require("../config/db");
 
 exports.createMainAgency = asyncHandler(async(req, res, next) => {
     const { manager_id, name_en, name_ar } = req.body;
