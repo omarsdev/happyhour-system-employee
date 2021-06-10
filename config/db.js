@@ -1,4 +1,4 @@
-const { con } = require("mysql");
+const mysql = require("mysql");
 
 const con = mysql.createConnection({
     connectionLimit: 10,
