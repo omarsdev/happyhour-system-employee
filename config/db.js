@@ -1,6 +1,6 @@
-var mysql = require("mysql");
+const {con} = require("mysql");
 
-var con = mysql.createConnection({
+const con = mysql.createConnection({
   connectionLimit: 10,
   host: "127.0.0.1",
   port: 3306,
@@ -16,3 +16,5 @@ con.connect((err) => {
     console.log("Not connected");
   }
 });
+
+module.exports = con
