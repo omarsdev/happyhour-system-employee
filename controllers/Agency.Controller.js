@@ -2,51 +2,84 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const { con } = require("../config/db");
 
-exports.createMainAgency = asyncHandler(async(req, res, next) => {
-    const { manager_id, name_en, name_ar } = req.body;
-    const agency = await con.query("INSERT INTO agency(manager_id, parent_agency_id, name_en, name_ar, isHQ, create_date) VALUES($1, $2, $3, $4, $5, $6)", [manager_id, null, name_en, name_ar, true, Date.now]);
-
-    res.status(201).json({
+exports.createMainAgency = asyncHandler(async (req, res, next) => {
+  const { manager_id, name_en, name_ar } = req.body;
+  const agency = await con.query(
+    `INSERT INTO agency(manager_id, name_en, name_ar, isHQ) VALUES('?', '?', '?', 'true')`,
+    [manager_id, name_en, name_ar],
+    (err, result) => {
+      if (err) {
+        return next(new ErrorResponse(`Error: ${err}`, 400));
+      }
+      res.status(201).json({
         success: true,
-        data: agency,
-    });
+        data: result,
+      });
+    }
+  );
 });
 
-exports.createSubAgency = asyncHandler(async(req, res, next) => {
-    const { manager_id, name_en, name_ar } = req.body;
-    const agency = await con.query("INSERT INTO agency(manager_id, parent_agency_id, name_en, name_ar, isHQ, create_date) VALUES($1, $2, $3, $4, $5, $6)", [manager_id, req.params.parent_id, name_en, name_ar, false, Date.now]);
-
-    res.status(201).json({
+exports.createSubAgency = asyncHandler(async (req, res, next) => {
+  const { manager_id, name_en, name_ar } = req.body;
+  const agency = await con.query(
+    `INSERT INTO agency(manager_id, parent_agency_id, name_en, name_ar) VALUES(?, ?, ?, ?)`,
+    [manager_id, req.params.parent_id, name_en, name_ar],
+    (err, result) => {
+      if (err) {
+        return next(new ErrorResponse(`Error: ${err}`, 400));
+      }
+      res.status(201).json({
         success: true,
-        data: agency,
-    });
+        data: result,
+      });
+    }
+  );
 });
 
-exports.getAgenciesById = asyncHandler(async(req, res, next) => {
-    const agencies = await con.query("SELECT * FROM agency WHERE parent_agency_id = $1", [req.params.parent_id]);
-
-    console.log(agencies);
-
-    res.status(200).json({
+exports.getAgenciesById = asyncHandler(async (req, res, next) => {
+  const agencies = await con.query(
+    `SELECT * FROM agency WHERE parent_agency_id = ?`,
+    [req.params.parent_id],
+    (err, result) => {
+      if (err) {
+        return next(new ErrorResponse(`Error: ${err}`), 400);
+      }
+      res.status(200).json({
         success: true,
         count: agencies.rows.length,
-        data: agencies,
-    });
+        data: result,
+      });
+    }
+  );
 });
 
-exports.updateAgency = asyncHandler(async(req, res, next) => {
-    const agency = await con.query("UPDATE agency SET manager_id = $1, parent_agency_id = $2, name_en = $3, name_ar = $4, isHQ = $5 WHERE id = $6", [manager_id, parent_agency_id, name_en, name_ar, isHQ, req.params.id]);
-
-    res.status(201).json({
+exports.updateAgency = asyncHandler(async (req, res, next) => {
+  const agency = await con.query(
+    `UPDATE agency SET manager_id = ?, parent_agency_id = ?, name_en = ?, name_ar = ?, isHQ = ? WHERE id = ?`,
+    [manager_id, parent_agency_id, name_en, name_ar, isHQ, req.params.id],
+    (err, result) => {
+      if (err) {
+        return next(new ErrorResponse(`Error: ${err}`, 400));
+      }
+      res.status(201).json({
         success: true,
-        data: agency,
-    });
+        data: result,
+      });
+    }
+  );
 });
 
-exports.deleteAgency = asyncHandler(async(req, res, next) => {
-    await con.query("DELETE FROM agency WHERE id = $1", [req.params.id]);
-
-    res.status(201).json({
+exports.deleteAgency = asyncHandler(async (req, res, next) => {
+  await con.query(
+    `DELETE FROM agency WHERE id = ?`,
+    [req.params.id],
+    (err, result) => {
+      if (err) {
+        return next(new ErrorResponse(`Error: ${err}`, 400));
+      }
+      res.status(201).json({
         success: true,
-    });
+      });
+    }
+  );
 });
