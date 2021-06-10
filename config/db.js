@@ -11,7 +11,7 @@ const con = mysql.createConnection({
 
 });
 //
-/* function Query(query) {
+/* function Query(query) {//
   pool.getConnection(function(err, connection) {
     const 
   });
