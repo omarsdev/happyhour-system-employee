@@ -9,6 +9,7 @@ const path = require("path");
 
 dotenv.config({ path: "./config/config.env" });
 //kjguygoytfoytof
+//MWAWFAAAAAAAAAAAAAAAAK
 
 const app = express();
 app.use(express.json());
