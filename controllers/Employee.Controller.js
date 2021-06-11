@@ -34,17 +34,26 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
     marital_date,
   } = req.body;
 
-  // const x = queryParamsArrayConnection("x", ["1", "2", "3"])
-
+  // CHECK IF EMAIL EXISTS PROCEDURE
   const emailCheck = await queryParamsConnection(
     "call email_EXISTS(?)",
     `${email}`
   ).then((result) => {
     return result[0][0].isExist;
   });
-
   if (emailCheck == -1) {
     return next(new ErrorResponse(`Email Exists`, 400));
+  }
+
+  //Validation password
+  function checkPassword(str) {
+    strongRegex = new RegExp(
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"
+    );
+    return strongRegex.test(str);
+  }
+  if (!checkPassword(password)) {
+    return next(new ErrorResponse("Password should contain atleast one number and one special character", 400));
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -76,23 +85,22 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
 
 exports.Login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return next(
       new ErrorResponse("Check if email or password are written", 400)
     );
   }
-
-  const Login = await queryParamsConnection("SELECT * FROM employee WHERE email = ?", email).then((result) => {
+  const Login = await queryParamsConnection(
+    "SELECT * FROM employee WHERE email = ?",
+    email
+  ).then((result) => {
     return result;
   });
-
   if (Login.length == 0) {
-    return next(new ErrorResponse("Re-enter please", 401));
+    return next(new ErrorResponse("Re-enter the email please", 401));
   }
 
   const valid = await bcrypt.compare(password, Login[0].password);
-
   if (!valid) {
     return next(new ErrorResponse("Invalid Credentials", 401));
   }
@@ -110,7 +118,7 @@ exports.Login = asyncHandler(async (req, res, next) => {
   //   success: true,
   //   jwtToken,
   res.status(201).json({
-    success: true
+    success: true,
   });
 });
 
