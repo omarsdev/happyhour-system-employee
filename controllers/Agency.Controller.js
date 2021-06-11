@@ -1,85 +1,65 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const con = require("../config/db");
+const {
+  queryConnection,
+  queryParamsConnection,
+  queryParamsArrayConnection,
+} = require("../utils/queryStatements");
 
 exports.createMainAgency = asyncHandler(async (req, res, next) => {
   const { city_id, manager_id, name_en, name_ar } = req.body;
-  const agency = await con.query(
+  const agency = await queryParamsArrayConnection(
     `INSERT INTO agency(city_id, manager_id, name_en, name_ar, isHQ) VALUES(?, ?, ?, ?)`,
-    [city_id, manager_id, name_en, name_ar, true],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`, 400));
-      }
-      res.status(201).json({
+    [city_id, manager_id, name_en, name_ar, true]).then((result) => {
+      res.status(200).json({
         success: true,
         data: result,
       });
-    }
-  );
+    });
 });
 
 exports.createSubAgency = asyncHandler(async (req, res, next) => {
   const { manager_id, name_en, name_ar } = req.body;
-  const agency = await con.query(
+  const agency = await queryParamsArrayConnection(
     `INSERT INTO agency(manager_id, parent_agency_id, name_en, name_ar) VALUES(?, ?, ?, ?)`,
-    [manager_id, req.params.parent_id, name_en, name_ar],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`, 400));
-      }
-      res.status(201).json({
+    [manager_id, req.params.parent_id, name_en, name_ar]).then((result) => {
+      res.status(200).json({
         success: true,
         data: result,
       });
-    }
-  );
+    });
 });
 
 exports.getAgenciesById = asyncHandler(async (req, res, next) => {
-  const agencies = await con.query(
+  const agencies = await queryParamsConnection(
     `SELECT * FROM agency WHERE parent_agency_id = ?`,
-    [req.params.parent_id],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`), 400);
-      }
+    [req.params.parent_id]).then((result) => {
       res.status(200).json({
         success: true,
         count: agencies.rows.length,
         data: result,
       });
-    }
-  );
+    });
 });
 
 exports.updateAgency = asyncHandler(async (req, res, next) => {
-  const agency = await con.query(
+  const agency = await queryParamsArrayConnection(
     `UPDATE agency SET manager_id = ?, parent_agency_id = ?, name_en = ?, name_ar = ?, isHQ = ? WHERE id = ?`,
-    [manager_id, parent_agency_id, name_en, name_ar, isHQ, req.params.id],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`, 400));
-      }
-      res.status(201).json({
+    [manager_id, parent_agency_id, name_en, name_ar, isHQ, req.params.id]).then((result) => {
+      res.status(200).json({
         success: true,
         data: result,
       });
-    }
-  );
+    });
 });
 
 exports.deleteAgency = asyncHandler(async (req, res, next) => {
-  await con.query(
+  await queryParamsConnection(
     `DELETE FROM agency WHERE id = ?`,
-    [req.params.id],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`, 400));
-      }
-      res.status(201).json({
+    [req.params.id]).then((result) => {
+      res.status(200).json({
         success: true,
       });
-    }
-  );
+    });
 });

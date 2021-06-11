@@ -3,6 +3,19 @@ const asyncHandler = require("../middleware/async");
 const { jwtGenerator } = require("../utils/jwtGenerator");
 const con = require("../config/db");
 const bcrypt = require("bcrypt");
+const {
+  queryConnection,
+  queryParamsConnection,
+  queryParamsArrayConnection,
+} = require("../utils/queryStatements");
+
+exports.getEmployees = asyncHandler(async (req, res, next) => {
+  const getEmployees = await queryConnection("select * from employee").then(
+    (result) => {
+      console.log(result);
+    }
+  );
+});
 
 exports.createEmployee = asyncHandler(async (req, res, next) => {
   const {
@@ -10,105 +23,94 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
     department_id,
     first_name,
     last_name,
-    email,
     password,
+    email,
     birth_date,
     nationality,
     marital_status,
     type,
     income_status,
     isManager,
+    marital_date,
   } = req.body;
-  const verify = await con.query(
-    "SELECT * FROM employee WHERE email = ?",
-    [email],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`, 400));
-      }
-    }
-  );
 
-  if (verify.rows.length > 0) {
-    return next(new ErrorResponse("Email already exist !!!", 401));
+  // const x = queryParamsArrayConnection("x", ["1", "2", "3"])
+
+  const emailCheck = await queryParamsConnection(
+    "call email_EXISTS(?)",
+    `${email}`
+  ).then((result) => {
+    return result[0][0].isExist;
+  });
+
+  if (emailCheck == -1) {
+    return next(new ErrorResponse(`Email Exists`, 400));
   }
 
-  const salt = await bcrypt.genSalt(process.env.SALT);
+  const salt = await bcrypt.genSalt(10);
   const bpassword = await bcrypt.hash(password, salt);
 
-  const emp = await con.query(
-    "INSERT INTO employee(position_id, department_id, first_name, last_name, email, password, birth_date, nationality, marital_status, marital_date, type, income_status, isManager) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  const createEmployee = await queryParamsArrayConnection(
+    "INSERT INTO employee(position_id, department_id, first_name, last_name, password, email, birth_date, nationality, marital_status, type, income_status, isManager, marital_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       position_id,
       department_id,
       first_name,
       last_name,
-      email,
       bpassword,
+      email,
       birth_date,
       nationality,
       marital_status,
-      marital_date,
       type,
       income_status,
       isManager,
-    ],
-    (err, result) => {
-      if (err) {
-        return next(new ErrorResponse(`Error: ${err}`, 400));
-      }
-      const jwtToken = jwtGenerator(emp.rows[0].id);
-
-      const options = {
-        expires: new Date(
-          Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-        ),
-        httpOnly: true,
-      };
-
-      res.status(statusCode).cookie("token", jwtToken, options).json({
-        success: true,
-        jwtToken,
-      });
-    }
-  );
+      marital_date,
+    ]
+  ).then((result) => {
+    res.json({
+      data: result,
+    });
+  });
 });
 
 exports.Login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return next(
       new ErrorResponse("Check if email or password are written", 400)
     );
   }
 
-  const emp = await con.query("SELECT * FROM employee WHERE email = ?", [
-    email,
-  ]);
+  const Login = await queryParamsConnection("SELECT * FROM employee WHERE email = ?", email).then((result) => {
+    return result;
+  });
 
-  if (emp.rows.length == 0) {
+  if (Login.length == 0) {
     return next(new ErrorResponse("Re-enter please", 401));
   }
 
-  const valid = await bcrypt.compare(password, emp.rows[0].password);
+  const valid = await bcrypt.compare(password, Login[0].password);
 
   if (!valid) {
     return next(new ErrorResponse("Invalid Credentials", 401));
   }
 
-  const jwtToken = jwtGenerator(emp.rows[0].id);
+  // const jwtToken = jwtGenerator(Login.rows[0].id);
+  // const options = {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true,
+  // };
 
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-  };
-
-  //sendTokenResponse(user, 200, res);
-  res.status(statusCode).cookie("token", jwtToken, options).json({
-    success: true,
-    jwtToken,
+  // //sendTokenResponse(user, 200, res);
+  // res.status(statusCode).cookie("token", jwtToken, options).json({
+  //   success: true,
+  //   jwtToken,
+  res.status(201).json({
+    success: true
   });
 });
 
