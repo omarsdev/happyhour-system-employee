@@ -34,6 +34,17 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
     marital_date,
   } = req.body;
 
+  //Validation email
+  function checkEmailName(str) {
+    emailRegex = new RegExp(
+      "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@grayscale-ag.com$"
+    );
+    return emailRegex.test(str);
+  }
+  if (!checkEmailName(email)) {
+    return next(new ErrorResponse("Error in email", 400));
+  }
+
   // CHECK IF EMAIL EXISTS PROCEDURE
   const emailCheck = await queryParamsConnection(
     "call email_EXISTS(?)",
@@ -53,7 +64,12 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
     return strongRegex.test(str);
   }
   if (!checkPassword(password)) {
-    return next(new ErrorResponse("Password should contain atleast one number and one special character", 400));
+    return next(
+      new ErrorResponse(
+        "Password should contain atleast one number and one special character",
+        400
+      )
+    );
   }
 
   const salt = await bcrypt.genSalt(10);
