@@ -1,6 +1,7 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const { jwtGenerator } = require("../utils/jwtGenerator");
+const { checkEmailName, checkPassword } = require("../utils/employeeFunctions");
 const con = require("../config/db");
 const bcrypt = require("bcrypt");
 const {
@@ -35,12 +36,6 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
   } = req.body;
 
   //Validation email
-  function checkEmailName(str) {
-    emailRegex = new RegExp(
-      "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@grayscale-ag.com$"
-    );
-    return emailRegex.test(str);
-  }
   if (!checkEmailName(email)) {
     return next(new ErrorResponse("Error in email", 400));
   }
@@ -57,12 +52,6 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
   }
 
   //Validation password
-  function checkPassword(str) {
-    strongRegex = new RegExp(
-      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"
-    );
-    return strongRegex.test(str);
-  }
   if (!checkPassword(password)) {
     return next(
       new ErrorResponse(
@@ -102,9 +91,7 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
 exports.Login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return next(
-      new ErrorResponse("Check if email or password are written", 400)
-    );
+    return next(new ErrorResponse("Check if fileds are not empty", 400));
   }
   const Login = await queryParamsConnection(
     "SELECT * FROM employee WHERE email = ?",
@@ -147,6 +134,74 @@ exports.Logout = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: {},
+  });
+});
+
+exports.UpdateEmployeeById = asyncHandler(async (req, res, next) => {
+  const {
+    position_id,
+    department_id,
+    first_name,
+    last_name,
+    password,
+    birth_date,
+    marital_status,
+    type,
+    income_status,
+    isManager,
+    marital_date,
+    termination,
+  } = req.body;
+
+  if(marital_status == 0) {
+    marital_date == null;
+  }
+
+  //Validation password
+  if (!checkPassword(password)) {
+    return next(
+      new ErrorResponse(
+        "Password should contain atleast one number and one special character",
+        400
+      )
+    );
+  }
+
+  const UpdateEmployeeById = await queryParamsArrayConnection(
+   `UPDATE employee SET 
+    position_id = ?, 
+    department_id = ?, 
+    first_name = ?, 
+    last_name = ?, 
+    password = ?, 
+    birth_date = ?, 
+    marital_status = ?, 
+    type = ?, 
+    income_status = ?, 
+    isManager = ?, 
+    marital_date = ?,
+    termination = ?
+    WHERE id = ?`,
+    [
+      position_id,
+      department_id,
+      first_name,
+      last_name,
+      password,
+      birth_date,
+      marital_status,
+      type,
+      income_status,
+      isManager,
+      marital_date,
+      termination,
+      req.params.id,
+    ]
+  ).then((result) => {
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
   });
 });
 
