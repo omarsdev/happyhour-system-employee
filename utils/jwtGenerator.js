@@ -7,7 +7,7 @@ function jwtGenerator(id) {
         }
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, process.env.JWT_EXPIRE);
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 
     console.log(token);
 
