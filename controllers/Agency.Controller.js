@@ -21,7 +21,7 @@ exports.createMainAgency = asyncHandler(async(req, res, next) => {
     }
 
     const agency = await queryParamsArrayConnection(
-        `INSERT INTO agency(city_id, manager_id, name_en, name_ar, isHQ) VALUES(?, ?, ?, ?, ?)`, [city_id, manager_id, name_en, name_ar, true]
+        `INSERT INTO agency(city_id, manager_id, parent_agency_id name_en, name_ar, isHQ) VALUES(?, ?, ?, ?, ?, ?)`, [city_id, manager_id, null, name_en, name_ar, true]
     ).then((result) => {
         res.status(200).json({
             success: true,
@@ -59,7 +59,6 @@ exports.getAgenciesById = asyncHandler(async(req, res, next) => {
     ).then((result) => {
         res.status(200).json({
             success: true,
-            count: agencies.rows.length,
             data: result,
         });
     });
