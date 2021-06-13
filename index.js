@@ -27,7 +27,7 @@ app.use("/api/v1/employee", require("./routes/Employee.Routes"));
 app.use("/api/v1/country", require("./routes/Country.Routes"));
 app.use("/api/v1/report", require("./routes/Report.Routes"));
 //app.use("/api/v1/city", require("./routes/City.Routes"));
-//app.use("/api/v1/agency", require("./routes/Agency.Routes"));
+app.use("/api/v1/agency", require("./routes/Agency.Routes"));
 
 app.use(errorhandler)
 

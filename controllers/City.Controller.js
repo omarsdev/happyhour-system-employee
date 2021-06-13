@@ -10,7 +10,7 @@ const {
 exports.createCity = asyncHandler(async (req, res, next) => {
   const { name_en, name_ar, province_code } = req.body;
   const city = await queryParamsArrayConnection(
-    "INSERT INTO city(country_id, name_en, name_ar, province_code) VALUES(?, ?, ?, ?)",
+    "INSERT INTO city(country_id, name_en, name_ar) VALUES(?, ?, ?)",
     [req.params.country_id, name_en, name_ar, province_code]
   ).then((result) => {
     res.status(200).json({

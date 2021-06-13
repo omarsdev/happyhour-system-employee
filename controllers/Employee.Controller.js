@@ -13,15 +13,17 @@ const {
 exports.getEmployees = asyncHandler(async (req, res, next) => {
   const getEmployees = await queryConnection("select * from employee").then(
     (result) => {
-      console.log(result);
+      res.json({
+        success: true,
+      });
     }
   );
 });
 
 exports.createEmployee = asyncHandler(async (req, res, next) => {
   const {
-    position_id,
-    department_id,
+    // position_id,
+    // department_id,
     first_name,
     last_name,
     password,
@@ -41,13 +43,13 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
   }
 
   // CHECK IF EMAIL EXISTS PROCEDURE
-  const emailCheck = await queryParamsConnection(
-    "call email_EXISTS(?)",
+  const addEmployeeCheck = await queryParamsConnection(
+    "call addEmployeeCheck(?)",
     `${email}`
   ).then((result) => {
-    return result[0][0].isExist;
+    return result[0][0].isExists;
   });
-  if (emailCheck == -1) {
+  if (addEmployeeCheck == -1) {
     return next(new ErrorResponse(`Email Exists`, 400));
   }
 
@@ -65,7 +67,7 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
   const bpassword = await bcrypt.hash(password, salt);
 
   const createEmployee = await queryParamsArrayConnection(
-    "INSERT INTO employee(position_id, department_id, first_name, last_name, password, email, birth_date, nationality, marital_status, type, income_status, isManager, marital_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO employee(first_name, last_name, password, email, birth_date, nationality, marital_status, type, income_status, isManager, marital_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       position_id,
       department_id,
