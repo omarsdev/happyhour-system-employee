@@ -11,26 +11,82 @@ const {
 } = require("../utils/queryStatements");
 
 exports.getEmployees = asyncHandler(async(req, res, next) => {
-    const Employees = await queryConnection("select * from employee").then(
+    const getEmployees = await queryConnection("select * from employee").then(
         (result) => {
-            console.log(result);
+            res.json({
+                success: true,
+                data: result
+            });
         }
     );
-    res.status(200).json({
-        success: true,
-        data: Employees,
-    });
 });
 
-exports.getEmployeesByDepID = asyncHandler(async(req, res, next) => {
-    const Employees = await queryParamsConnection("select * from employee WHERE department_id = ?", [req.params.id]).then(
-        (result) => {
-            console.log(result);
-        }
-    );
-    res.status(200).json({
-        success: true,
-        data: Employees,
+exports.createEmployee = asyncHandler(async(req, res, next) => {
+    const {
+        // position_id,
+        // department_id,
+        first_name,
+        last_name,
+        password,
+        email,
+        birth_date,
+        nationality,
+        marital_status,
+        type,
+        income_status,
+        isManager,
+        marital_date,
+    } = req.body;
+
+    //Validation email
+    if (!checkEmailName(email)) {
+        return next(new ErrorResponse("Error in email", 400));
+    }
+
+    // CHECK IF EMAIL EXISTS PROCEDURE
+    const addEmployeeCheck = await queryParamsConnection(
+        "call addEmployeeCheck(?)",
+        `${email}`
+    ).then((result) => {
+        return result[0][0].isExists;
+    });
+    if (addEmployeeCheck == -1) {
+        return next(new ErrorResponse(`Email Exists`, 400));
+    }
+
+    //Validation password
+    if (!checkPassword(password)) {
+        return next(
+            new ErrorResponse(
+                "Password should contain atleast one number and one special character",
+                400
+            )
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const bpassword = await bcrypt.hash(password, salt);
+
+    const createEmployee = await queryParamsArrayConnection(
+        "INSERT INTO employee(first_name, last_name, password, email, birth_date, nationality, marital_status, type, income_status, isManager, marital_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+            position_id,
+            department_id,
+            first_name,
+            last_name,
+            bpassword,
+            email,
+            birth_date,
+            nationality,
+            marital_status,
+            type,
+            income_status,
+            isManager,
+            marital_date,
+        ]
+    ).then((result) => {
+        res.json({
+            data: result,
+        });
     });
 });
 
