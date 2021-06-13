@@ -15,6 +15,7 @@ exports.getEmployees = asyncHandler(async (req, res, next) => {
     (result) => {
       res.json({
         success: true,
+        data: result
       });
     }
   );
