@@ -2,6 +2,11 @@ const jwt = require("jsonwebtoken");
 const asyncHandler = require("./async");
 const ErrorResponse = require("../utils/errorResponse");
 const con = require("../config/db");
+const {
+    queryConnection,
+    queryParamsConnection,
+    queryParamsArrayConnection,
+} = require("../utils/queryStatements");
 
 exports.protect = asyncHandler(async(req, res, next) => {
     //take token
@@ -28,13 +33,13 @@ exports.protect = asyncHandler(async(req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         //req.employee = await Employee.findById(decoded.id);
-        req.employee = await con.query("SELECT * FROM employee WHERE id = ?", [decoded.id], (err, result) => {
-            if (err) {
-                return next(new ErrorResponse(`Error: ${err}`, 400));
-            }
+        req.employee = await queryParamsConnection("SELECT * FROM employee WHERE id = ?", [decoded.user.id]).then((result) => {
+            /* res.status(201).json({
+                success: true,
+                data: result,
+            }); */
+            return result;
         });
-
-        console.log(req.employee[0]);
 
         next();
     } catch (err) {
@@ -44,11 +49,18 @@ exports.protect = asyncHandler(async(req, res, next) => {
 
 exports.authorize = (...roles) => {
     return async(req, res, next) => {
-        const position = await con.query("SELECT position.name FROM employee INNER JOIN position ON employee.position_id = position.id WHERE employee.id = ?", [req.employee.id], (err, result) => {});
-        if (!roles.includes(position)) {
+        const position_name = await queryParamsConnection("SELECT pos.name AS name FROM employee INNER JOIN pos ON employee.position_id = pos.id WHERE employee.id = ?", [req.employee[0].id]).then((result) => {
+            /* res.status(201).json({
+                success: true,
+                data: result,
+            }); */
+            return result;
+        });
+        //console.log(position_name);
+        if (!roles.includes(position_name[0].name)) {
             return next(
                 new ErrorResponse(
-                    `Employee Role ${position} is unautherized to access this routes`,
+                    `Employee Role ${position_name[0].name} is unautherized to access this routes`,
                     401
                 )
             );

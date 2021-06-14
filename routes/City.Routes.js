@@ -5,9 +5,12 @@ const {
     createCity,
     updateCity,
     deleteCity,
+    getCities,
 } = require("../controllers/City.Controller");
 
 const router = express.Router();
+
+router.route("/").get(getCities);
 
 router.route("/country/:country_id").get(getCitiesById).post(createCity);
 

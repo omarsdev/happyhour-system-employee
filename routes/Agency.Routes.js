@@ -6,14 +6,16 @@ const {
     createSubAgency,
     updateAgency,
     deleteAgency,
+    getAgencies,
+    getAgencyById,
 } = require("../controllers/Agency.Controller");
 
 const router = express.Router();
 
-router.route("/").post(createMainAgency);
+router.route("/").post(createMainAgency).get(getAgencies);
 
 router.route("/parent/:parent_id").get(getAgenciesById).post(createSubAgency);
 
-router.route("/:id").put(updateAgency).delete(deleteAgency);
+router.route("/:id").get(getAgencyById).put(updateAgency).delete(deleteAgency);
 
 module.exports = router;

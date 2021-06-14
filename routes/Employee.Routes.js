@@ -5,8 +5,8 @@ const {
     Logout,
     createEmployee,
     getEmployees,
+    getEmployeesByDepId,
     UpdateEmployeeById,
-    getEmployeesByDepID,
     Terminate,
     ChangePassword
 } = require("../controllers/Employee.Controller");
@@ -16,9 +16,11 @@ const { protect } = require("../middleware/authorize");
 const router = express.Router();
 
 router.route("/login").post(Login);
-router.route("/").post(createEmployee).get(protect, getEmployees);
-router.route("/logout").get(Logout);
-router.route("/:id").put(UpdateEmployeeById).put(protect, Terminate).put(protect, ChangePassword);
-router.route("/department/:id").get(getEmployeesByDepID);
+router.route("/").post(protect, createEmployee).get(protect, getEmployees);
+router.route("/logout").get(protect, Logout);
+router.route("/terminate/:id").put(protect, Terminate);
+router.route("/changepassword/:id").put(protect, ChangePassword);
+router.route("/:id").put(protect, UpdateEmployeeById);
+router.route("/department/:id").get(protect, getEmployeesByDepId);
 
 module.exports = router;

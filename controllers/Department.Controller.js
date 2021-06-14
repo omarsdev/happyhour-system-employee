@@ -8,10 +8,11 @@ const {
 } = require("../utils/queryStatements");
 
 exports.createDepartment = asyncHandler(async(req, res, next) => {
-    const { manager_id, agency_id, name } = req.body;
-    const dep = await queryParamsArrayConnection('INSERT INTO department(manager_id, agency_id, name) VALUES (?, ?, ?)', [manager_id, agency_id, name]).then((result) => {
+    const { agency_id, name } = req.body;
+    const dep = await queryParamsArrayConnection('INSERT INTO department(agency_id, name) VALUES (?, ?)', [agency_id, name]).then((result) => {
         res.status(200).json({
             success: true,
+            data: result
         });
     });
 });
@@ -26,20 +27,29 @@ exports.getDepartments = asyncHandler(async(req, res, next) => {
 });
 
 exports.getDepartmentbyId = asyncHandler(async(req, res, next) => {
-    const deps = await queryParamsConnection('SELECT * FROM department WHERE id = ?', [req.params.id]).then((result) => {
+    const dep = await queryParamsConnection('SELECT * FROM department WHERE id = ?', [req.params.id]).then((result) => {
         res.status(200).json({
             success: true,
             data: result
         });
     });
+});
 
+exports.getDepartmentsbyAgencyId = asyncHandler(async(req, res, next) => {
+    const deps = await queryParamsConnection('SELECT * FROM department WHERE agency_id = ?', [req.params.agency_id]).then((result) => {
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    });
 });
 
 exports.updateDepartment = asyncHandler(async(req, res, next) => {
-    const { manager_id, agency_id, name } = req.body;
-    const dep = await queryParamsArrayConnection('UPDATE department SET manager_id = ?, agency_id = ?, name = ? WHERE id = ?', [manager_id, agency_id, name, req.params.id]).then((result) => {
+    const { agency_id, name } = req.body;
+    const dep = await queryParamsArrayConnection('UPDATE department SET agency_id = ?, name = ? WHERE id = ?', [agency_id, name, req.params.id]).then((result) => {
         res.status(200).json({
             success: true,
+            data: result
         });
     });
 });

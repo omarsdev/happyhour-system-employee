@@ -9,9 +9,10 @@ const {
     queryParamsConnection,
     queryParamsArrayConnection,
 } = require("../utils/queryStatements");
+const { json } = require("body-parser");
 
 exports.getEmployees = asyncHandler(async(req, res, next) => {
-    const getEmployees = await queryConnection("select * from employee").then(
+    const employees = await queryConnection("select * from employee").then(
         (result) => {
             res.json({
                 success: true,
@@ -23,20 +24,24 @@ exports.getEmployees = asyncHandler(async(req, res, next) => {
 
 exports.createEmployee = asyncHandler(async(req, res, next) => {
     const {
-        // position_id,
-        // department_id,
+        position_id,
+        department_id,
         first_name,
         last_name,
-        password,
         email,
+        password,
         birth_date,
         nationality,
         marital_status,
+        marital_date,
         type,
         income_status,
         isManager,
-        marital_date,
     } = req.body;
+
+    /* if (marital_status == 0) {
+        marital_date = null;
+    } */
 
     //Validation email
     if (!checkEmailName(email)) {
@@ -68,80 +73,9 @@ exports.createEmployee = asyncHandler(async(req, res, next) => {
     const bpassword = await bcrypt.hash(password, salt);
 
     const createEmployee = await queryParamsArrayConnection(
-        "INSERT INTO employee(first_name, last_name, password, email, birth_date, nationality, marital_status, type, income_status, isManager, marital_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+        "INSERT INTO employee(position_id, department_id, first_name, last_name, email, password, birth_date, nationality, marital_status, marital_date, type, income_status, isManager, isTerminated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             position_id,
             department_id,
-            first_name,
-            last_name,
-            bpassword,
-            email,
-            birth_date,
-            nationality,
-            marital_status,
-            type,
-            income_status,
-            isManager,
-            marital_date,
-        ]
-    ).then((result) => {
-        res.json({
-            data: result,
-        });
-    });
-});
-
-exports.createEmployee = asyncHandler(async(req, res, next) => {
-    //TODO Remove Comments
-    const {
-        /* position_id,
-        department_id, */
-        first_name,
-        last_name,
-        email,
-        password,
-        birth_date,
-        nationality,
-        marital_status,
-        marital_date,
-        type,
-        income_status,
-        isManager,
-    } = req.body;
-
-    //Validation email
-    if (!checkEmailName(email)) {
-        return next(new ErrorResponse("Error in email", 400));
-    }
-
-    // CHECK IF EMAIL EXISTS PROCEDURE
-    /* const emailCheck = await queryParamsConnection(
-        "call email_EXISTS(?)",
-        `${email}`
-    ).then((result) => {
-        return result[0][0].isExist;
-    });
-
-    if (emailCheck == -1) {
-        return next(new ErrorResponse(`Email Exists`, 400));
-    } */
-
-    //Validation password
-    if (!checkPassword(password)) {
-        return next(
-            new ErrorResponse(
-                "Password should contain at least one number and one special character",
-                400
-            )
-        );
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const bpassword = await bcrypt.hash(password, salt);
-
-    const createEmployee = await queryParamsArrayConnection(
-        "INSERT INTO employee(first_name, last_name, email, password, birth_date, nationality, marital_status, marital_date, type, income_status, isManager, isTerminated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-            /* position_id,
-            department_id, */
             first_name,
             last_name,
             email,
@@ -156,12 +90,14 @@ exports.createEmployee = asyncHandler(async(req, res, next) => {
             false
         ]
     ).then((result) => {
-        /* res.json({
-            data: result,
-        }); */
+
     });
-    const emp_id = await queryParamsConnection("SELECT id FROM employee WHERE email = ?", [email]).then((result) => {});
-    const token = jwtGenerator(emp_id);
+
+    var id;
+    const emp_id = await queryParamsConnection("SELECT id FROM employee WHERE email = ?", [email]).then((result) => { id = result[0].id });
+
+    console.log(id);
+    const token = jwtGenerator(id);
 
     const options = {
         expires: new Date(
@@ -173,6 +109,40 @@ exports.createEmployee = asyncHandler(async(req, res, next) => {
     res.status(200).cookie("token", token, options).json({
         success: true,
         token,
+    });
+});
+
+exports.getEmployeesByDepId = asyncHandler(async(req, res, next) => {
+    const employees = await queryParamsArrayConnection(
+        "SELECT * FROM employee WHERE department_id = ?", [req.params.id]
+    ).then((result) => {
+        /* res.json({
+            data: result,
+        }); */
+    });
+    /* if (employees.length == 0) {
+        res.json({
+            success: false,
+            msg: "There is no employees"
+        });
+    } */
+    res.json({
+        success: true,
+        data: employees,
+    });
+});
+
+exports.getEmployeebyId = asyncHandler(async(req, res, next) => {
+    const employee = await queryParamsArrayConnection(
+        "SELECT * FROM employee WHERE id = ?", [req.params.id]
+    ).then((result) => {
+        /* res.json({
+            data: result,
+        }); */
+    });
+    res.json({
+        success: true,
+        data: employee,
     });
 });
 
@@ -196,9 +166,15 @@ exports.Login = asyncHandler(async(req, res, next) => {
         return next(new ErrorResponse("Invalid Credentials", 401));
     }
 
-    const emp_id = await queryParamsConnection("SELECT id FROM employee WHERE email = ?", [email]).then((result) => {});
+    var id;
+    const emp_id = await queryParamsConnection("SELECT id, isTerminated FROM employee WHERE email = ?", [email]).then((result) => {
+        if (result[0].isTerminated) {
+            return next(new ErrorResponse("YOU'RE FIRED !!", 401));
+        }
+        id = result[0].id;
+    });
 
-    const token = jwtGenerator(emp_id[0].id);
+    const token = jwtGenerator(id);
 
     const options = {
         expires: new Date(
@@ -248,7 +224,6 @@ exports.UpdateEmployeeById = asyncHandler(async(req, res, next) => {
         first_name,
         last_name,
         email,
-        password,
         birth_date,
         nationality,
         marital_status,
@@ -258,25 +233,12 @@ exports.UpdateEmployeeById = asyncHandler(async(req, res, next) => {
         isManager,
     } = req.body;
 
-    if (marital_status == 0) {
-        marital_date == null;
-    }
+    /* if (marital_status == 0) {
+        marital_date = null;
+    } */
 
     const UpdateEmployeeById = await queryParamsArrayConnection(
-        `UPDATE employee SET 
-    position_id = ?, 
-    department_id = ?, 
-    first_name = ?, 
-    last_name = ?, 
-    email = ?,
-    birth_date = ?, 
-    nationality = ?,
-    marital_status = ?, 
-    marital_date = ?,
-    type = ?, 
-    income_status = ?, 
-    isManager = ?, 
-    WHERE id = ?`, [
+        `UPDATE employee SET position_id = ?, department_id = ?, first_name = ?, last_name = ?, email = ?,birth_date = ?, nationality = ?,marital_status = ?, marital_date = ?, type = ?, income_status = ?, isManager = ? WHERE id = ?`, [
             position_id,
             department_id,
             first_name,
@@ -300,14 +262,8 @@ exports.UpdateEmployeeById = asyncHandler(async(req, res, next) => {
 });
 
 exports.Terminate = asyncHandler(async(req, res, next) => {
-
     const UpdateEmployeeById = await queryParamsArrayConnection(
-        `UPDATE employee SET 
-    isTerminated = ? 
-    WHERE id = ?`, [
-            true,
-            req.params.id,
-        ]
+        "UPDATE employee SET isTerminated = ? WHERE id = ?", [1, req.params.id]
     ).then((result) => {
         res.status(200).json({
             success: true,

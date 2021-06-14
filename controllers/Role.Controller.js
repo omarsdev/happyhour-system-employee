@@ -1,4 +1,4 @@
-/* const ErrorResponse = require("../utils/errorResponse");
+const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const con = require("../config/db");
 const {
@@ -55,4 +55,4 @@ exports.addRoletoEmployee = asyncHandler(async(req, res, next) => {
             data: result
         });
     });
-}); */
+});

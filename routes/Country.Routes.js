@@ -18,6 +18,6 @@ router
     .route("/:id")
     .get(getCountryById)
     .put(updateCountry)
-    .delete(deleteCountry);
+    .delete(protect, deleteCountry);
 
 module.exports = router;

@@ -1,13 +1,17 @@
 const express = require("express");
 
-const { createPosition, createSubPosition, updatePosition, getPositions } = require("../controllers/Position.Controller");
+const { createPosition, createSubPosition, updatePosition, getPositions, getPositionsByDepId, getPositionById } = require("../controllers/Position.Controller");
 
 const router = express.Router();
 
-router.route("/").post(createPosition).get(getPositions);
+router.route("/create/:id").post(createPosition);
 
-router.route("/:id").put(updatePosition);
+router.route("/").get(getPositions);
 
-router.route("/subPosition/:id").post(createSubPosition);
+router.route("/:id").put(updatePosition).get(getPositionById);
+
+router.route("/depID/:id").get(getPositionsByDepId);
+
+router.route("/create/depID/:dep_id/subID/:id").post(createSubPosition);
 
 module.exports = router;

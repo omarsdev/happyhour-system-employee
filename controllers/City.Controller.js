@@ -19,18 +19,25 @@ exports.createCity = asyncHandler(async(req, res, next) => {
     });
 });
 
+exports.getCities = asyncHandler(async(req, res, next) => {
+    const cities = await queryConnection(
+        "SELECT * FROM city"
+    ).then((result) => {
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    });
+});
+
 exports.getCitiesById = asyncHandler(async(req, res, next) => {
     const cities = await queryParamsConnection(
         "SELECT * FROM city where country_id = ?", [req.params.country_id]
     ).then((result) => {
-        /* res.status(200).json({
+        res.status(200).json({
             success: true,
             data: result,
-        }); */
-    });
-    res.status(200).json({
-        success: true,
-        data: cities,
+        });
     });
 });
 

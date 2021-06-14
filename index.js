@@ -28,6 +28,11 @@ app.use("/api/v1/country", require("./routes/Country.Routes"));
 app.use("/api/v1/report", require("./routes/Report.Routes"));
 app.use("/api/v1/city", require("./routes/City.Routes"));
 app.use("/api/v1/agency", require("./routes/Agency.Routes"));
+app.use("/api/v1/department", require("./routes/Department.Routes"));
+app.use("/api/v1/position", require("./routes/Position.Routes"));
+app.use("/api/v1/promotion", require("./routes/Promotion.Routes"));
+app.use("/api/v1/report", require("./routes/Report.Routes"));
+//app.use("/api/v1/role", require("./routes/Role.Routes"));
 
 app.use(errorhandler)
 

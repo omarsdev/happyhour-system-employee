@@ -53,15 +53,15 @@ exports.getCountryById = asyncHandler(async(req, res, next) => {
 
 exports.updateCountry = asyncHandler(async(req, res, next) => {
     const { name_en, name_ar, province_code } = req.body;
-
-    const addCountryCheck = await queryParamsArrayConnection(
+    //TODO REMOVE COMMENTS
+    /* const addCountryCheck = await queryParamsArrayConnection(
         "call addCountryCheck(?, ?, ?)", [name_en, name_ar, province_code]
     ).then((result) => {
         return result[0][0].isExists;
     });
     if (addCountryCheck == -1) {
         return next(new ErrorResponse(`The name or province_code Exists`, 400));
-    }
+    } */
 
     const country = await queryParamsArrayConnection(
         "UPDATE country SET name_en = ?, name_ar = ?, province_code = ? WHERE id = ?", [name_en, name_ar, province_code, req.params.id]
