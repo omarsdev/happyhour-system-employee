@@ -9,6 +9,7 @@ const {
 
 exports.createDepartment = asyncHandler(async(req, res, next) => {
     const { agency_id, name } = req.body;
+    // TODO add procedure 
     const dep = await queryParamsArrayConnection('INSERT INTO department(agency_id, name) VALUES (?, ?)', [agency_id, name]).then((result) => {
         res.status(200).json({
             success: true,
@@ -45,6 +46,7 @@ exports.getDepartmentsbyAgencyId = asyncHandler(async(req, res, next) => {
 });
 
 exports.updateDepartment = asyncHandler(async(req, res, next) => {
+    // TODO add procedure 
     const { agency_id, name } = req.body;
     const dep = await queryParamsArrayConnection('UPDATE department SET agency_id = ?, name = ? WHERE id = ?', [agency_id, name, req.params.id]).then((result) => {
         res.status(200).json({
@@ -53,3 +55,4 @@ exports.updateDepartment = asyncHandler(async(req, res, next) => {
         });
     });
 });
+// TODO add deleteDepartment 
